@@ -36,9 +36,9 @@ def parse_xml(file):
     pts = ['xmin', 'ymin', 'xmax', 'ymax']
 
     # image size
-    width = int(xml.find('size').find('width').text)
-    height = int(xml.find('size').find('height').text)
-
+    width = float(xml.find('size').find('width').text)
+    height = float(xml.find('size').find('height').text)
+    pdb.set_trace()
     # original location of the chip
     chip_loc = []
     loc = xml.find('location')

@@ -27,7 +27,7 @@ image_dir = dest_datadir + '/JPEGImages'
 list_dir = dest_datadir + '/ImageSets/Main'
 anno_dir = dest_datadir + '/Annotations'
 
-mask_path = os.path.join(home, 
+mask_path = os.path.join(home,
             'codes/deeplab-tensorflow/deeplab/datasets/tt100k/exp/vis/raw_segmentation_results')
 
 if not os.path.exists(dest_datadir):
@@ -39,7 +39,7 @@ if not os.path.exists(dest_datadir):
 
 def mask_chip(mask_box, image_size):
     """
-    Args: 
+    Args:
         mask_box: list of box, [xmin, ymin, xmax, ymax]
         image_size: (width, height)
     Returns:
@@ -55,16 +55,14 @@ def mask_chip(mask_box, image_size):
         box_cx = box[0] + box_w / 2
         box_cy = box[1] + box_h / 2
 
-        if box_w < 50 and box_h < 50:
-            chip_size = 50
-        elif box_w < 100 and box_h < 100:
-            chip_size = 100
+        if box_w < 100 and box_h < 100:
+            chip_size = 150
         elif box_w < 200 and box_h < 200:
             chip_size = 200
-        elif box_w < 400 and box_h < 400:
-            chip_size = 400
+        elif box_w < 300 and box_h < 300:
+            chip_size = 300
         else:
-            chip_size = 500
+            chip_size = 400
 
         chip = [box_cx - chip_size / 2, box_cy - chip_size / 2,
                 box_cx + chip_size / 2, box_cy + chip_size / 2]
@@ -75,8 +73,6 @@ def mask_chip(mask_box, image_size):
         chip = list(map(add, chip, [shift_x, shift_y]*2))
         chip_list.append([int(x) for x in chip])
     return chip_list
-  
-    
 
 def main():
     with open(test_ids, 'r') as f:
@@ -91,7 +87,7 @@ def main():
         height, width = mask_img.shape[:2]
         # pdb.set_trace()
         mask_box = utils.generate_box_from_mask(mask_img)
-        mask_box = list(map(utils.resize_box, mask_box, 
+        mask_box = list(map(utils.resize_box, mask_box,
                         [width]*len(mask_box), [2048]*len(mask_box)))
         mask_box = utils.enlarge_box(mask_box, (2048, 2048), ratio=1)
 
@@ -108,7 +104,7 @@ def main():
 
             chip_info = {'loc': chip}
             chip_loc[chip_name] = chip_info
-    
+
     # write test txt
     with open(os.path.join(list_dir, 'test.txt'), 'w') as f:
         f.writelines([x+'\n' for x in chip_name_list])

@@ -24,7 +24,7 @@ anno_dir = dest_datadir + '/Annotations'
 # chip loc
 loc_json = os.path.join(anno_dir, 'test_chip.json')
 # detections
-detect_json = os.path.join(home, 'codes/ssd.pytorch/test_results/results.json')
+detect_json = os.path.join(home, 'codes/gluon-cv/projects/yolo/results/results.json')
 
 # add path
 sys.path.append(os.path.join(root_datadir, 'code/python'))
