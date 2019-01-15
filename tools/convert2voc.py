@@ -7,21 +7,22 @@
 import os, sys
 import glob
 import cv2
-import numpy as np
-import shutil
 import json
+import shutil
+import numpy as np
 import concurrent.futures
 import pdb
 
-sys.path.append('./code/python')
+userhome = os.path.expanduser('~')
+sys.path.append(os.path.join(userhome, 'data/TT100K/code/python'))
 import anno_func
 
-src_datadir = './data'
+src_datadir = os.path.join(userhome, 'data/TT100K/data')
 src_traindir = src_datadir + '/train'
 src_testdir = src_datadir + '/test'
 src_annotation = src_datadir + '/annotations.json'
 
-dest_datadir = './TT100K_voc'
+dest_datadir = os.path.join(userhome, 'data/TT100K/TT100K_voc')
 image_dir = dest_datadir + '/JPEGImages'
 segmentation_dir = dest_datadir + '/SegmentationClass'
 list_folder = dest_datadir + '/ImageSets'
@@ -46,38 +47,61 @@ def _resize(src_image, dest_path):
     img = cv2.imread(src_image)
 
     height, width = img.shape[:2]
-    size = (int(width*0.3), int(height*0.3))
+    size = (int(width), int(height))
 
     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
     name = os.path.basename(src_image)
     cv2.imwrite(os.path.join(dest_path, name), img)
 
+def get_box(annos, imgid):
+    img = annos["imgs"][imgid]
+    box_all = []
+    for obj in img['objects']:
+        box = obj['bbox']
+        box = [box['xmin'], box['ymin'], box['xmax'], box['ymax']]
+        # box = [int(x * 0.3) for x in box]
+        box_all.append(np.array(box) / 2048)
+    return box_all
+
 train_list = glob.glob(src_traindir + '/*.jpg')
 test_list = glob.glob(src_testdir + '/*.jpg')
 all_list = train_list + test_list
 
-# pdb.set_trace()
-
-with concurrent.futures.ProcessPoolExecutor() as exector:
-    exector.map(_resize, all_list, [image_dir]*len(all_list))
+# print('image....\n')
+# with concurrent.futures.ThreadPoolExecutor() as exector:
+#     exector.map(_resize, all_list, [image_dir]*len(all_list))
 
 # mask
 with open(src_annotation, 'r') as f:
     annos = json.load(f)
 def _generate_mask(img_path):
     try:
+        # image mask
         img_id = os.path.split(img_path)[-1][:-4]
         im_data = anno_func.load_img(annos, src_datadir, img_id)
         mask = anno_func.load_mask(annos, src_datadir, img_id, im_data)
 
         height, width = mask.shape[:2]
-        size = (int(width*0.3), int(height*0.3))
+        size = (int(width), int(height))
 
         mask = cv2.resize(mask, size)
-        filename = os.path.join(segmentation_dir, img_id + '.png')
-        cv2.imwrite(filename, mask)
+        maskname = os.path.join(segmentation_dir, img_id + '.png')
+        cv2.imwrite(maskname, mask)
+
+        # chip mask 30x30
+        chip_mask = np.zeros((30, 30), dtype=int)
+        boxes = get_box(annos, img_id)
+        for box in boxes:
+            xmin, ymin, xmax, ymax = np.floor(box * 30).astype(np.int32)
+            chip_mask[ymin : ymax+1, xmin : xmax+1] = 1
+        maskname = os.path.join(segmentation_dir, img_id + '_chip.png')
+        cv2.imwrite(maskname, chip_mask)
+
     except Exception as e:
         print(e)
 
-with concurrent.futures.ProcessPoolExecutor() as exector:
+print('mask...')
+with concurrent.futures.ThreadPoolExecutor() as exector:
     exector.map(_generate_mask, all_list)
+# _generate_mask(all_list[0])
+

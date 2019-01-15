@@ -18,8 +18,8 @@ datadir = os.path.join(user_home, 'data/TT100K')
 label_path = datadir + '/TT100K_voc/SegmentationClass'
 annos_path = datadir + '/data/annotations.json'
 image_path = datadir + '/TT100K_voc/JPEGImages'
-mask_path = os.path.join(user_home, 
-            'codes/deeplab-tensorflow/deeplab/datasets/tt100k/exp/vis/raw_segmentation_results')
+mask_path = os.path.join(user_home, 'codes/gluon-cv/projects/seg/outdir')
+            # 'codes/deeplab-tensorflow/deeplab/datasets/tt100k/exp/vis/raw_segmentation_results')
 
 
 def get_box(annos, imgid):

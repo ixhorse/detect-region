@@ -18,8 +18,8 @@ def generate_box_from_mask(mask):
     image, contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
     for i in range(len(contours)):
         x, y, w, h = cv.boundingRect(contours[i])
-        if w < 15 and h < 15:
-            continue
+        # if w < 15 and h < 15:
+        #     continue
         box_all.append([x, y, x+w, y+h])
     return box_all
 
