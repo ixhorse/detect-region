@@ -48,7 +48,7 @@ def main():
         loc = chip_loc[chip_id]['loc']
         for i, pred_box in enumerate(chip_result['pred_box']):
             # transform to orginal image
-            ratio = (loc[2] - loc[0]) / 300.
+            ratio = (loc[2] - loc[0]) / 416.
             pred_box = [pred_box[0] * ratio + loc[0],
                         pred_box[1] * ratio + loc[1],
                         pred_box[2] * ratio + loc[0],

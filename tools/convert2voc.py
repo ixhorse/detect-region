@@ -67,9 +67,9 @@ train_list = glob.glob(src_traindir + '/*.jpg')
 test_list = glob.glob(src_testdir + '/*.jpg')
 all_list = train_list + test_list
 
-# print('image....\n')
-# with concurrent.futures.ThreadPoolExecutor() as exector:
-#     exector.map(_resize, all_list, [image_dir]*len(all_list))
+print('image....\n')
+with concurrent.futures.ThreadPoolExecutor() as exector:
+    exector.map(_resize, all_list, [image_dir]*len(all_list))
 
 # mask
 with open(src_annotation, 'r') as f:
@@ -100,8 +100,8 @@ def _generate_mask(img_path):
     except Exception as e:
         print(e)
 
-print('mask...')
-with concurrent.futures.ThreadPoolExecutor() as exector:
-    exector.map(_generate_mask, all_list)
+# print('mask...')
+# with concurrent.futures.ThreadPoolExecutor() as exector:
+#     exector.map(_generate_mask, all_list)
 # _generate_mask(all_list[0])
 

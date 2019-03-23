@@ -28,7 +28,8 @@ list_dir = dest_datadir + '/ImageSets/Main'
 anno_dir = dest_datadir + '/Annotations'
 
 mask_path = os.path.join(home,
-            'codes/deeplab-tensorflow/deeplab/datasets/tt100k/exp/vis/raw_segmentation_results')
+            'codes/gluon-cv/projects/seg/outdir')
+            # 'codes/deeplab-tensorflow/deeplab/datasets/tt100k/exp/vis/raw_segmentation_results')
 
 if not os.path.exists(dest_datadir):
     os.mkdir(dest_datadir)
@@ -56,13 +57,15 @@ def mask_chip(mask_box, image_size):
         box_cy = box[1] + box_h / 2
 
         if box_w < 100 and box_h < 100:
-            chip_size = 150
+            chip_size = max(box_w, box_h)+100
+        elif box_w < 150 and box_h < 150:
+            chip_size = max(box_w, box_h)+50
         elif box_w < 200 and box_h < 200:
-            chip_size = 200
+            chip_size = max(box_w, box_h)+100
         elif box_w < 300 and box_h < 300:
-            chip_size = 300
+            chip_size = max(box_w, box_h)+50
         else:
-            chip_size = 400
+            chip_size = max(box_w, box_h)
 
         chip = [box_cx - chip_size / 2, box_cy - chip_size / 2,
                 box_cx + chip_size / 2, box_cy + chip_size / 2]
@@ -84,20 +87,21 @@ def main():
         origin_img = cv2.imread(os.path.join(src_testdir, '%s.jpg'%imgid))
         mask_img = cv2.imread(os.path.join(mask_path, '%s.png'%imgid), cv2.IMREAD_GRAYSCALE)
 
+        # mask_img = cv2.resize(mask_img, (2048, 2048), cv2.INTER_MAX)
         height, width = mask_img.shape[:2]
         # pdb.set_trace()
         mask_box = utils.generate_box_from_mask(mask_img)
         mask_box = list(map(utils.resize_box, mask_box,
                         [width]*len(mask_box), [2048]*len(mask_box)))
-        mask_box = utils.enlarge_box(mask_box, (2048, 2048), ratio=1)
+        # mask_box = utils.enlarge_box(mask_box, (2048, 2048), ratio=1)
 
         chip_list = mask_chip(mask_box, (2048, 2048))
         # utils._boxvis(cv2.resize(mask_img, (2048, 2048)), chip_list, origin_img)
-        # os._exit(0)
+        # cv2.waitKey(0)
 
         for i, chip in enumerate(chip_list):
             chip_img = origin_img[chip[1]:chip[3], chip[0]:chip[2], :].copy()
-            chip_img = cv2.resize(chip_img, (300, 300), cv2.INTER_AREA)
+            chip_img = cv2.resize(chip_img, (416, 416), cv2.INTER_AREA)
             chip_name = '%s_%d' % (imgid, i)
             cv2.imwrite(os.path.join(image_dir, '%s.jpg'%chip_name), chip_img)
             chip_name_list.append(chip_name)

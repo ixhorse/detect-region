@@ -92,32 +92,33 @@ def chip_v2(image, gt_boxes, labels):
         box_h = box[3] - box[1]
         # different chip size for different gt size
         if box_w < 100 and box_h < 100:
-            chip_size = 150
-        elif box_w < 200 and box_h < 200:
-            chip_size = 300
+            chip_size_list = [150, 300]
+        elif box_w < 300 and box_h < 300:
+            chip_size_list = [300, 600]
         else:
-            chip_size = 600
+            chip_size_list = [600, 800]
         
-        # region to random crop around gt
-        region = np.clip( 
-            [box[0] - chip_size, box[1] - chip_size,
-            box[0] + chip_size, box[1] + chip_size],
-            0, 2047)
+        for chip_size in chip_size_list:
+            # region to random crop around gt
+            region = np.clip( 
+                [box[0] - chip_size, box[1] - chip_size,
+                box[0] + chip_size, box[1] + chip_size],
+                0, 2047)
 
-        # random crop
-        while True:
-            start_point = 0
-            new_x, new_y = region[0], region[1]
-            if region[2] - region[0] - chip_size > 0:
-                new_x = region[0] + randint(start_point, region[2] - region[0] - chip_size)
-            if region[3] - region[1] - chip_size > 0:
-                new_y = region[1] + randint(start_point, region[3] - region[1] - chip_size)
-            chip = [new_x, new_y, new_x+chip_size, new_y+chip_size]
-            # abandon partial overlap chip
-            if chip[2] >= box[2] and chip[3] >= box[3]:
-                break
-            start_point += 10
-        chip_list.append(np.array(chip))
+            # random crop
+            while True:
+                start_point = 0
+                new_x, new_y = region[0], region[1]
+                if region[2] - region[0] - chip_size > 0:
+                    new_x = region[0] + randint(start_point, region[2] - region[0] - chip_size)
+                if region[3] - region[1] - chip_size > 0:
+                    new_y = region[1] + randint(start_point, region[3] - region[1] - chip_size)
+                chip = [new_x, new_y, new_x+chip_size, new_y+chip_size]
+                # abandon partial overlap chip
+                if chip[2] >= box[2] and chip[3] >= box[3]:
+                    break
+                start_point += 10
+            chip_list.append(np.array(chip))
     
     # chip gt
     chip_gt_list = []
@@ -167,9 +168,9 @@ def make_xml(chip, box_list, label_list, image_name):
 
     node_size = SubElement(node_root, 'size')
     node_width = SubElement(node_size, 'width')
-    node_width.text = '300'
+    node_width.text = '416'
     node_height = SubElement(node_size, 'height')
-    node_height.text = '300'
+    node_height.text = '416'
     node_depth = SubElement(node_size, 'depth')
     node_depth.text = '3'
 
@@ -206,10 +207,10 @@ def write_chip_and_anno(image, imgid,
         xml_name = '%d_%d.xml' % (imgid, i)
 
         # resize ratio -> 300x300
-        ratio = (chip[2] - chip[0]) / 300
+        ratio = (chip[2] - chip[0]) / 416
         
         chip_img = image[chip[1]:chip[3], chip[0]:chip[2], :].copy()
-        chip_img = cv2.resize(chip_img, (300, 300), interpolation=cv2.INTER_LINEAR)
+        chip_img = cv2.resize(chip_img, (416, 416), interpolation=cv2.INTER_LINEAR)
 
         dom = make_xml(chip, chip_gt_list[i] / ratio, chip_label_list[i], img_name)
 

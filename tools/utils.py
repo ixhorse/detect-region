@@ -18,8 +18,8 @@ def generate_box_from_mask(mask):
     image, contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
     for i in range(len(contours)):
         x, y, w, h = cv.boundingRect(contours[i])
-        # if w < 15 and h < 15:
-        #     continue
+#if w < 2 and h < 2:
+#           continue
         box_all.append([x, y, x+w, y+h])
     return box_all
 
@@ -83,12 +83,14 @@ def overlap(box1, box2, thresh = 0.75):
         return True
 
 def _boxvis(img, box_list, origin_img=None, binary=True):
-    if binary:
-        ret, img = cv.threshold(img, 0, 255, cv.THRESH_BINARY)
+    # if binary:
+    #     ret, img = cv.threshold(img, 0, 255, cv.THRESH_BINARY)
     for box in box_list:
         cv.rectangle(img, (box[0], box[1]), (box[2], box[3]), 255, 4)
     plt.subplot(1, 2, 1); plt.imshow(img, cmap='gray')
     if not origin_img is None:
+        for box in box_list:
+            cv.rectangle(origin_img, (box[0], box[1]), (box[2], box[3]), 255, 4)
         plt.subplot(1, 2, 2); plt.imshow(origin_img[:, :, [2,1,0]])
     plt.show()
     # cv.namedWindow('a', cv.WINDOW_AUTOSIZE)
