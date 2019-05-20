@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 TT100K_CLASSES = (
-    'p11', 'pl5', 'pne', 'il60', 'pl80', 'pl100', 'il80', 'po', 'w55', 
-    'pl40', 'pn', 'pm55', 'w32', 'pl20', 'p27', 'p26', 'p12', 'i5', 
-    'pl120', 'pl60', 'pl30', 'pl70', 'pl50', 'ip', 'pg', 'p10', 'io', 
-    'pr40', 'p5', 'p3', 'i2', 'i4', 'ph4', 'wo', 'pm30', 'ph5', 'p23', 
+    'p11', 'pl5', 'pne', 'il60', 'pl80', 'pl100', 'il80', 'po', 'w55',
+    'pl40', 'pn', 'pm55', 'w32', 'pl20', 'p27', 'p26', 'p12', 'i5',
+    'pl120', 'pl60', 'pl30', 'pl70', 'pl50', 'ip', 'pg', 'p10', 'io',
+    'pr40', 'p5', 'p3', 'i2', 'i4', 'ph4', 'wo', 'pm30', 'ph5', 'p23',
     'pm20', 'w57', 'w13', 'p19', 'w59', 'il100', 'p6', 'ph4.5')
 
 def generate_box_from_mask(mask):
@@ -15,13 +15,13 @@ def generate_box_from_mask(mask):
         mask: 0/1 array
     """
     box_all = []
-    image, contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+    contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
     for i in range(len(contours)):
         x, y, w, h = cv.boundingRect(contours[i])
 #if w < 2 and h < 2:
 #           continue
         box_all.append([x, y, x+w, y+h])
-    return box_all
+    return np.array(box_all)
 
 
 def enlarge_box(mask_box, image_size, ratio=2):

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-generate 300x300 chips in voc format
+generate region chips in voc format
 image size: 2048x2048
 sign size: (0, 500)
 """
 
 import cv2
 import json
+import shutil
 import os, sys
 import numpy as np
 import concurrent.futures
@@ -37,7 +38,7 @@ list_dir = dest_datadir + '/ImageSets/Main'
 anno_dir = dest_datadir + '/Annotations'
 
 # add path
-sys.path.append(os.path.join(root_datadir, 'code/python'))
+sys.path.append(os.path.join(root_datadir, 'code/python')) #tt100k tool
 import anno_func
 
 if not os.path.exists(dest_datadir):
@@ -47,31 +48,6 @@ if not os.path.exists(dest_datadir):
     os.mkdir(anno_dir)
 
 
-def chip_v1(image, gt_boxes):
-    """generate chips from a image
-    method: random crop in whole image
-
-    Args:
-        image: np.array
-        gt_boxes: list of [xmin, ymin, xmax, ymax]
-    
-    Returns:
-        chip list, size 300x300 
-        new gt_box list
-    """
-    # use 600x600 chip
-    use_600 = False
-    w = [box[2] - box[0] for box in gt_boxes]
-    h = [box[3] - box[1] for box in gt_boxes]
-    if np.max(w) > 200 or np.max(h) > 200:
-        use_600 = True
-
-    size = image.shape
-    for i, j in product(range(size[1]-300, 30), 
-                        range(size[0]-300, 30)):
-        pass
-
-
 def chip_v2(image, gt_boxes, labels):
     """generate chips from a image
     method: random crop around gt_box
@@ -79,9 +55,9 @@ def chip_v2(image, gt_boxes, labels):
     Args:
         image: np.array
         gt_boxes: list of [xmin, ymin, xmax, ymax]
-        labels: list of 
+        labels: list of
     Returns:
-        chip list, size 300x300 
+        chip list, size 300x300
         new gt_box list
     """
     size = image.shape
@@ -97,10 +73,10 @@ def chip_v2(image, gt_boxes, labels):
             chip_size_list = [300, 600]
         else:
             chip_size_list = [600, 800]
-        
+
         for chip_size in chip_size_list:
             # region to random crop around gt
-            region = np.clip( 
+            region = np.clip(
                 [box[0] - chip_size, box[1] - chip_size,
                 box[0] + chip_size, box[1] + chip_size],
                 0, 2047)
@@ -119,7 +95,7 @@ def chip_v2(image, gt_boxes, labels):
                     break
                 start_point += 10
             chip_list.append(np.array(chip))
-    
+
     # chip gt
     chip_gt_list = []
     chip_label_list = []
@@ -128,8 +104,8 @@ def chip_v2(image, gt_boxes, labels):
         chip_label = []
 
         for i, box in enumerate(gt_boxes):
-            if utils.overlap(chip, box, 0.6):
-                box = [max(box[0], chip[0]), max(box[1], chip[1]), 
+            if utils.overlap(chip, box, 0.5):
+                box = [max(box[0], chip[0]), max(box[1], chip[1]),
                        min(box[2], chip[2]), min(box[3], chip[3])]
                 new_box = [box[0] - chip[0], box[1] - chip[1],
                            box[2] - chip[0], box[3] - chip[1]]
@@ -139,7 +115,7 @@ def chip_v2(image, gt_boxes, labels):
 
         chip_gt_list.append(chip_gt)
         chip_label_list.append(chip_label)
-    
+
     return chip_list, chip_gt_list, chip_label_list
 
 
@@ -174,7 +150,7 @@ def make_xml(chip, box_list, label_list, image_name):
     node_depth = SubElement(node_size, 'depth')
     node_depth.text = '3'
 
-    for i in range(len(box_list)):  
+    for i in range(len(box_list)):
         node_object = SubElement(node_root, 'object')
         node_name = SubElement(node_object, 'name')
         node_name.text = str(label_list[i])
@@ -198,7 +174,7 @@ def make_xml(chip, box_list, label_list, image_name):
     # print(xml)
     return dom
 
-def write_chip_and_anno(image, imgid, 
+def write_chip_and_anno(image, imgid,
     chip_list, chip_gt_list, chip_label_list):
     """write chips of one image to disk and make xml annotations
     """
@@ -208,7 +184,7 @@ def write_chip_and_anno(image, imgid,
 
         # resize ratio -> 300x300
         ratio = (chip[2] - chip[0]) / 416
-        
+
         chip_img = image[chip[1]:chip[3], chip[0]:chip[2], :].copy()
         chip_img = cv2.resize(chip_img, (416, 416), interpolation=cv2.INTER_LINEAR)
 
@@ -259,12 +235,12 @@ def _worker(imgid, annos):
     except Exception:
         traceback.print_exc()
         print(imgid)
-        os._exit(0) 
+        os._exit(0)
 
 def main():
     with open(src_annotation, 'r') as f:
         annos = json.load(f)
-    
+
     with open(train_ids, 'r') as f:
         train_list = [x.strip() for x in f.readlines()]
 

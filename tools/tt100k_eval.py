@@ -24,7 +24,9 @@ anno_dir = dest_datadir + '/Annotations'
 # chip loc
 loc_json = os.path.join(anno_dir, 'test_chip.json')
 # detections
-detect_json = os.path.join(home, 'codes/gluon-cv/projects/yolo/results/results.json')
+detect_json = os.path.join(home, 
+                        # 'working/yolov3/output/results.json')
+                        'codes/gluon-cv/projects/ssd/results/results.json')
 
 # add path
 sys.path.append(os.path.join(root_datadir, 'code/python'))
@@ -48,7 +50,7 @@ def main():
         loc = chip_loc[chip_id]['loc']
         for i, pred_box in enumerate(chip_result['pred_box']):
             # transform to orginal image
-            ratio = (loc[2] - loc[0]) / 416.
+            ratio = (loc[2] - loc[0]) / 300.
             pred_box = [pred_box[0] * ratio + loc[0],
                         pred_box[1] * ratio + loc[1],
                         pred_box[2] * ratio + loc[0],

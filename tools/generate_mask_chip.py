@@ -28,6 +28,7 @@ list_dir = dest_datadir + '/ImageSets/Main'
 anno_dir = dest_datadir + '/Annotations'
 
 mask_path = os.path.join(home,
+            # 'working/pytorch-deeplab-xception/run/mask')
             'codes/gluon-cv/projects/seg/outdir')
             # 'codes/deeplab-tensorflow/deeplab/datasets/tt100k/exp/vis/raw_segmentation_results')
 
