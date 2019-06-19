@@ -24,12 +24,10 @@ anno_dir = dest_datadir + '/Annotations'
 # chip loc
 loc_json = os.path.join(anno_dir, 'test_chip.json')
 # detections
-detect_json = os.path.join(home, 
-                        # 'working/yolov3/output/results.json')
-                        'codes/gluon-cv/projects/ssd/results/results.json')
+detect_json = \
+'../yolov3/output/results.json'
+# '../faster-rcnn.pytorch/output/results.json'
 
-# add path
-sys.path.append(os.path.join(root_datadir, 'code/python'))
 import anno_func
 
 def main():
@@ -44,13 +42,14 @@ def main():
 
     tt100k_results = {}
     for chip_id, chip_result in chip_detect.items():
+        chip_id = chip_id.split('/')[-1]
         img_id = chip_id.split('_')[0]
 
         img_result = []
         loc = chip_loc[chip_id]['loc']
         for i, pred_box in enumerate(chip_result['pred_box']):
             # transform to orginal image
-            ratio = (loc[2] - loc[0]) / 300.
+            ratio = (loc[2] - loc[0]) / 416.
             pred_box = [pred_box[0] * ratio + loc[0],
                         pred_box[1] * ratio + loc[1],
                         pred_box[2] * ratio + loc[0],

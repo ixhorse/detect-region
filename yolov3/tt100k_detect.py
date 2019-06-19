@@ -77,7 +77,7 @@ def detect(
         img = torch.from_numpy(img).unsqueeze(0).to(device)
         pred, _ = model(img)
         detections = nms(pred, conf_thres, nms_thres, method='nms')[0]
-        detections = detections[detections[:, 4] > 0.6]
+        detections = detections[detections[:, 4] > 0.7]
 
         if detections is not None and len(detections) > 0:
             # Rescale boxes from 416 to true image size

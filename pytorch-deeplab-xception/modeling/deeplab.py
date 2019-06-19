@@ -14,6 +14,12 @@ class DeepLab(nn.Module):
         super(DeepLab, self).__init__()
         if backbone == 'drn':
             output_stride = 8
+        if backbone == 'resnet':
+            link_in = 1024
+            link_out = 1024
+        elif backbone == 'mobilenet':
+            link_in = 64
+            link_out = 128
 
         if sync_bn == True:
             BatchNorm = SynchronizedBatchNorm2d
@@ -22,10 +28,10 @@ class DeepLab(nn.Module):
 
         self.backbone = build_backbone(backbone, output_stride, BatchNorm)
         self.aspp = build_aspp(backbone, output_stride, BatchNorm)
-        self.link_conv = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
-                                       BatchNorm(64),
+        self.link_conv = nn.Sequential(nn.Conv2d(link_in, link_in, kernel_size=3, stride=1, padding=1, bias=False),
+                                       BatchNorm(link_in),
                                        nn.ReLU(),
-                                       nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1, bias=False))
+                                       nn.Conv2d(link_in, link_out, kernel_size=3, stride=1, padding=1, bias=False))
         self.last_conv = nn.Sequential(nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
                                        BatchNorm(256),
                                        nn.ReLU(),

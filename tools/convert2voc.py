@@ -14,7 +14,6 @@ import concurrent.futures
 import pdb
 
 userhome = os.path.expanduser('~')
-sys.path.append(os.path.join(userhome, 'data/TT100K/code/python'))
 import anno_func
 
 src_datadir = os.path.join(userhome, 'data/TT100K/data')
@@ -67,9 +66,9 @@ train_list = glob.glob(src_traindir + '/*.jpg')
 test_list = glob.glob(src_testdir + '/*.jpg')
 all_list = train_list + test_list
 
-print('image....\n')
-with concurrent.futures.ThreadPoolExecutor() as exector:
-    exector.map(_resize, all_list, [image_dir]*len(all_list))
+# print('image....\n')
+# with concurrent.futures.ThreadPoolExecutor() as exector:
+#     exector.map(_resize, all_list, [image_dir]*len(all_list))
 
 # mask
 with open(src_annotation, 'r') as f:
@@ -78,19 +77,27 @@ def _generate_mask(img_path):
     try:
         # image mask
         img_id = os.path.split(img_path)[-1][:-4]
-        im_data = anno_func.load_img(annos, src_datadir, img_id)
-        mask = anno_func.load_mask(annos, src_datadir, img_id, im_data)
+        # im_data = anno_func.load_img(annos, src_datadir, img_id)
+        # mask = anno_func.load_mask(annos, src_datadir, img_id, im_data)
 
-        height, width = mask.shape[:2]
-        size = (int(width), int(height))
+        # height, width = mask.shape[:2]
+        # size = (int(width), int(height))
 
-        mask = cv2.resize(mask, size)
-        maskname = os.path.join(segmentation_dir, img_id + '.png')
-        cv2.imwrite(maskname, mask)
+        # mask = cv2.resize(mask, size)
+        # maskname = os.path.join(segmentation_dir, img_id + '.png')
+        # cv2.imwrite(maskname, mask)
 
         # chip mask 30x30
-        chip_mask = np.zeros((30, 30), dtype=int)
+        mask_w, mask_h = 30, 30
+        chip_mask = np.zeros((30, 30), dtype=np.uint8)
         boxes = get_box(annos, img_id)
+        for box in boxes:
+            xmin, ymin, xmax, ymax = np.floor(box * 30).astype(np.int32)
+            ignore_xmin = xmin - 1 if xmin - 1 >= 0 else 0
+            ignore_ymin = ymin - 1 if ymin - 1 >= 0 else 0
+            ignore_xmax = xmax + 1 if xmax + 1 < mask_w else mask_w - 1
+            ignore_ymax = ymax + 1 if ymax + 1 < mask_h else mask_h - 1
+            chip_mask[ignore_ymin : ignore_ymax+1, ignore_xmin : ignore_xmax+1] = 255
         for box in boxes:
             xmin, ymin, xmax, ymax = np.floor(box * 30).astype(np.int32)
             chip_mask[ymin : ymax+1, xmin : xmax+1] = 1
@@ -100,8 +107,8 @@ def _generate_mask(img_path):
     except Exception as e:
         print(e)
 
-# print('mask...')
-# with concurrent.futures.ThreadPoolExecutor() as exector:
-#     exector.map(_generate_mask, all_list)
-# _generate_mask(all_list[0])
+print('mask...')
+with concurrent.futures.ThreadPoolExecutor() as exector:
+    exector.map(_generate_mask, all_list)
+_generate_mask(all_list[0])
 
