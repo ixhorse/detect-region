@@ -36,7 +36,7 @@ if not os.path.exists(dest_datadir):
 train_ids = src_traindir + '/ids.txt'
 shutil.copy(train_ids, list_folder + '/train.txt')
 test_ids = src_testdir + '/ids.txt'
-shutil.copy(test_ids, list_folder + '/val.txt')
+shutil.copy(test_ids, list_folder + '/test.txt')
 
 # copy train and test images
 def _copy(src_image, dest_path):
@@ -66,9 +66,9 @@ train_list = glob.glob(src_traindir + '/*.jpg')
 test_list = glob.glob(src_testdir + '/*.jpg')
 all_list = train_list + test_list
 
-# print('image....\n')
-# with concurrent.futures.ThreadPoolExecutor() as exector:
-#     exector.map(_resize, all_list, [image_dir]*len(all_list))
+print('image....\n')
+with concurrent.futures.ThreadPoolExecutor() as exector:
+    exector.map(_resize, all_list, [image_dir]*len(all_list))
 
 # mask
 with open(src_annotation, 'r') as f:
@@ -91,13 +91,13 @@ def _generate_mask(img_path):
         mask_w, mask_h = 30, 30
         chip_mask = np.zeros((30, 30), dtype=np.uint8)
         boxes = get_box(annos, img_id)
-        for box in boxes:
-            xmin, ymin, xmax, ymax = np.floor(box * 30).astype(np.int32)
-            ignore_xmin = xmin - 1 if xmin - 1 >= 0 else 0
-            ignore_ymin = ymin - 1 if ymin - 1 >= 0 else 0
-            ignore_xmax = xmax + 1 if xmax + 1 < mask_w else mask_w - 1
-            ignore_ymax = ymax + 1 if ymax + 1 < mask_h else mask_h - 1
-            chip_mask[ignore_ymin : ignore_ymax+1, ignore_xmin : ignore_xmax+1] = 255
+        # for box in boxes:
+        #     xmin, ymin, xmax, ymax = np.floor(box * 30).astype(np.int32)
+        #     ignore_xmin = xmin - 1 if xmin - 1 >= 0 else 0
+        #     ignore_ymin = ymin - 1 if ymin - 1 >= 0 else 0
+        #     ignore_xmax = xmax + 1 if xmax + 1 < mask_w else mask_w - 1
+        #     ignore_ymax = ymax + 1 if ymax + 1 < mask_h else mask_h - 1
+        #     chip_mask[ignore_ymin : ignore_ymax+1, ignore_xmin : ignore_xmax+1] = 255
         for box in boxes:
             xmin, ymin, xmax, ymax = np.floor(box * 30).astype(np.int32)
             chip_mask[ymin : ymax+1, xmin : xmax+1] = 1

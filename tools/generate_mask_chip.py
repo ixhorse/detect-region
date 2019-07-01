@@ -27,8 +27,7 @@ image_dir = dest_datadir + '/JPEGImages'
 list_dir = dest_datadir + '/ImageSets/Main'
 anno_dir = dest_datadir + '/Annotations'
 
-mask_path = os.path.join(home,
-            'codes/detect-region/pytorch-deeplab-xception/run/mask')
+mask_path = '../pytorch-deeplab-xception/run/mask'
             # 'codes/gluon-cv/projects/seg/outdir')
 
 if not os.path.exists(dest_datadir):
