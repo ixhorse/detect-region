@@ -262,10 +262,10 @@ if __name__ == '__main__':
         im_data_pt = im_data_pt.permute(0, 3, 1, 2)
         im_info_pt = torch.from_numpy(im_info_np)
 
-        im_data.data.resize_(im_data_pt.size()).copy_(im_data_pt)
-        im_info.data.resize_(im_info_pt.size()).copy_(im_info_pt)
-        gt_boxes.data.resize_(1, 1, 5).zero_()
-        num_boxes.data.resize_(1).zero_()
+        im_data.resize_(im_data_pt.size()).copy_(im_data_pt)
+        im_info.resize_(im_info_pt.size()).copy_(im_info_pt)
+        gt_boxes.resize_(1, 1, 5).zero_()
+        num_boxes.resize_(1).zero_()
 
         # pdb.set_trace()
         det_tic = time.time()
@@ -349,11 +349,9 @@ if __name__ == '__main__':
         
         if len(im_dets) > 0:
             im_dets = torch.cat(im_dets, 0).numpy()
-            im_dets = im_dets[im_dets[:, 4] > 0.65]
-            results[imglist[num_images][:-4]] = \
-                {'pred_box': im_dets[:,:4],
-                'pred_score': im_dets[:,4],
-                'pred_label': [tt100k_classes[int(i)] for i in im_dets[:,5]]}
+            im_dets = im_dets[im_dets[:, 4] > 0.7]
+            im_dets[:, 5] = im_dets[:, 5] - 1
+            results[imglist[num_images][:-4]] = im_dets
 
         misc_toc = time.time()
         nms_time = misc_toc - misc_tic

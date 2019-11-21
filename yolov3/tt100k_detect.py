@@ -83,9 +83,7 @@ def detect(
             # Rescale boxes from 416 to true image size
             scale_coords(img_size, detections[:, :4], im0.shape).round()
 
-            results[im_id] = {'pred_box': detections[:,:4],
-                           'pred_score': detections[:,4],
-                           'pred_label': [classes[int(i)] for i in detections[:,5]]}
+            results[im_id] = detections
             
             # Add bbox to the image
             if save_images:
