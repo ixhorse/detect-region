@@ -112,7 +112,7 @@ class tt100k(imdb):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, 'tt100k')
+        return os.path.join(cfg.DATA_DIR, 'TT100K')
 
     def gt_roidb(self):
         """

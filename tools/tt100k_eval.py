@@ -24,10 +24,10 @@ anno_dir = dest_datadir + '/Annotations'
 # chip loc
 loc_json = os.path.join(anno_dir, 'test_chip.json')
 # detections
-detect_json = \
-'../yolov3/output/results.json'
-    # '../faster-rcnn.pytorch/output/results.json'
-    
+detect_json = "{}".format(
+    '../yolov3/output/results.json')
+    # '../faster-rcnn.pytorch/output/results.json')
+    # '../../visdrone/mmdetection/visdrone/results_region_tt100k.json')
     
 import anno_func
 

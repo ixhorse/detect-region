@@ -68,9 +68,9 @@ def chip_v2(image, gt_boxes, labels):
         box_h = box[3] - box[1]
         # different chip size for different gt size
         if box_w < 50 and box_h < 50:
-            chip_size_list = [100, 200, 250]
+            chip_size_list = [80, 100, 180, 250]
         if box_w < 100 and box_h < 100:
-            chip_size_list = [150, 300, 400]
+            chip_size_list = [150, 250, 350, 400]
         elif box_w < 200 and box_h < 200:
             chip_size_list = [300, 600, 800]
         else:
