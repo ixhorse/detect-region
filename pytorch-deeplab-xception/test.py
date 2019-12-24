@@ -18,7 +18,7 @@ class Tester(object):
         self.args = args
         
         # Define Dataloader
-        test_set = tt100k.TT100KSegmentation(args, split='test')
+        test_set = tt100k.TT100KSegmentation(args, split='val')
         self.nclass = test_set.NUM_CLASSES
         self.test_loader = DataLoader(test_set,
                                 batch_size=args.test_batch_size,

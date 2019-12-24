@@ -13,7 +13,7 @@ class Path(object):
         elif dataset == 'coco':
             return '/path/to/datasets/coco/'
         elif dataset == 'tt100k':
-            return os.path.join(user_home, 'data/TT100K/TT100K_voc')  # folder that contains VOCdevkit/.    
+            return os.path.join(user_home, 'data/TT100K/region_voc')  # folder that contains VOCdevkit/.    
         else:
             print('Dataset {} not available.'.format(dataset))
             raise NotImplementedError

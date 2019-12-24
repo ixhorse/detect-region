@@ -19,7 +19,7 @@ class DeepLab(nn.Module):
             link_out = 1024
         elif backbone == 'mobilenet':
             link_in = 64
-            link_out = 128
+            link_out = 64
 
         if sync_bn == True:
             BatchNorm = SynchronizedBatchNorm2d
@@ -28,15 +28,12 @@ class DeepLab(nn.Module):
 
         self.backbone = build_backbone(backbone, output_stride, BatchNorm)
         self.aspp = build_aspp(backbone, output_stride, BatchNorm)
-        self.link_conv = nn.Sequential(nn.Conv2d(link_in, link_in, kernel_size=3, stride=1, padding=1, bias=False),
-                                       BatchNorm(link_in),
-                                       nn.ReLU(),
-                                       nn.Conv2d(link_in, link_out, kernel_size=3, stride=1, padding=1, bias=False))
-        self.last_conv = nn.Sequential(nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=False),
-                                       BatchNorm(256),
-                                       nn.ReLU(),
-                                       nn.Dropout(0.1),
-                                       nn.Conv2d(256, num_classes, kernel_size=1, stride=1))
+        self.link_conv = nn.Sequential(nn.Conv2d(link_in, link_out, kernel_size=1, stride=1, padding=0, bias=False))
+        self.last_conv = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
+                                        BatchNorm(64),
+                                        nn.ReLU(),
+                                        nn.Dropout(0.1),
+                                        nn.Conv2d(64, num_classes, kernel_size=1, stride=1))
 
         self._init_weight()
         if freeze_bn:
@@ -45,8 +42,8 @@ class DeepLab(nn.Module):
     def forward(self, input):
         x, low_level_feat = self.backbone(input)
         # x = F.interpolate(x, size=low_level_feat.size()[2:], mode='bilinear', align_corners=True)
-        low_level_feat = self.link_conv(low_level_feat)
-        x = torch.cat((x, low_level_feat), dim=1)
+        # low_level_feat = self.link_conv(low_level_feat)
+        # x = torch.cat((x, low_level_feat), dim=1)
         x = self.aspp(x)
         x = self.last_conv(x)
 
