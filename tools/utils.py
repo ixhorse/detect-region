@@ -1,6 +1,8 @@
 import cv2 as cv
 import numpy as np
+from operator import add
 import matplotlib.pyplot as plt
+from sklearn.cluster import AgglomerativeClustering
 
 TT100K_CLASSES = (
     'p11', 'pl5', 'pne', 'il60', 'pl80', 'pl100', 'il80', 'po', 'w55',
@@ -8,6 +10,30 @@ TT100K_CLASSES = (
     'pl120', 'pl60', 'pl30', 'pl70', 'pl50', 'ip', 'pg', 'p10', 'io',
     'pr40', 'p5', 'p3', 'i2', 'i4', 'ph4', 'wo', 'pm30', 'ph5', 'p23',
     'pm20', 'w57', 'w13', 'p19', 'w59', 'il100', 'p6', 'ph4.5')
+
+def region_cluster(regions, mask_shape):
+    """
+    层次聚类
+    """
+    regions = np.array(regions)
+    centers = (regions[:, [2, 3]] + regions[:, [0, 1]]) / 2.0
+
+    model = AgglomerativeClustering(
+                n_clusters=None,
+                linkage='complete',
+                distance_threshold=min(mask_shape) * 0.1,
+                compute_full_tree=True)
+
+    labels = model.fit_predict(centers)
+
+    cluster_regions = []
+    for idx in np.unique(labels):
+        boxes = regions[labels == idx]
+        new_box = [min(boxes[:, 0]), min(boxes[:, 1]),
+                   max(boxes[:, 2]), max(boxes[:, 3])]
+        cluster_regions.append(new_box)
+    
+    return cluster_regions
 
 def generate_box_from_mask(mask):
     """
@@ -23,6 +49,51 @@ def generate_box_from_mask(mask):
         box_all.append([x, y, x+w, y+h])
     return np.array(box_all)
 
+def crop(mask_box, image_size):
+    """
+    Args:
+        mask_box: list of box, [xmin, ymin, xmax, ymax]
+        image_size: (width, height)
+    Returns:
+        chips: list of box
+    """
+    width, height = image_size
+
+    chip_list = []
+    for box in mask_box:
+        box_w = box[2] - box[0]
+        box_h = box[3] - box[1]
+        box_cx = box[0] + box_w / 2
+        box_cy = box[1] + box_h / 2
+
+        if box_w < 100 and box_h < 100:
+            chip_size = max(box_w, box_h)+150
+        elif box_w < 150 and box_h < 150:
+            chip_size = max(box_w, box_h)+50
+        elif box_w < 200 and box_h < 200:
+            chip_size = max(box_w, box_h)+100
+        elif box_w < 300 and box_h < 300:
+            chip_size = max(box_w, box_h)+100
+        else:
+            chip_size = max(box_w, box_h)
+
+        chip = [box_cx - chip_size / 2, box_cy - chip_size / 2,
+                box_cx + chip_size / 2, box_cy + chip_size / 2]
+
+        shift_x = max(0, 0 - chip[0]) + min(0, width-1 - chip[2])
+        shift_y = max(0, 0 - chip[1]) + min(0, height-1 - chip[3])
+
+        chip = list(map(add, chip, [shift_x, shift_y]*2))
+        chip_list.append([int(x) for x in chip])
+    return chip_list
+
+def region_box_generation(mask, image_size):
+    regions = generate_box_from_mask(mask)
+    if len(regions) > 1:
+        regions = region_cluster(regions, mask.shape)
+    regions = list(map(resize_box, regions,
+                    [mask.shape[0]]*len(regions), [image_size[0]]*len(regions)))
+    return crop(regions, image_size)
 
 def enlarge_box(mask_box, image_size, ratio=2):
     """

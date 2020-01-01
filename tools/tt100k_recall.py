@@ -84,10 +84,11 @@ def main():
         height, width = mask_img.shape[:2]
 
         label_box = get_box(annos, imgid)
-        mask_box = utils.generate_box_from_mask(mask_img)
-        mask_box = list(map(utils.resize_box, mask_box,
-                        [width]*len(mask_box), [2048]*len(mask_box)))
-        mask_box = utils.enlarge_box(mask_box, (2048, 2048), ratio=2)
+        mask_box = utils.region_box_generation(mask_img, (2048, 2048))
+        # mask_box = utils.generate_box_from_mask(mask_img)
+        # mask_box = list(map(utils.resize_box, mask_box,
+        #                 [width]*len(mask_box), [2048]*len(mask_box)))
+        # mask_box = utils.enlarge_box(mask_box, (2048, 2048), ratio=2)
         # _boxvis(mask_img, mask_box)
         # break
 

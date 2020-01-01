@@ -8,7 +8,6 @@ import json
 import numpy as np
 from tqdm import tqdm
 from glob import glob
-from operator import add
 import utils
 import pdb
 
@@ -36,46 +35,6 @@ if not os.path.exists(dest_datadir):
     os.makedirs(list_dir)
     os.mkdir(anno_dir)
 
-
-def mask_chip(mask_box, image_size):
-    """
-    Args:
-        mask_box: list of box, [xmin, ymin, xmax, ymax]
-        image_size: (width, height)
-    Returns:
-        chips: list of box
-    """
-
-    width, height = image_size
-
-    chip_list = []
-    for box in mask_box:
-        box_w = box[2] - box[0]
-        box_h = box[3] - box[1]
-        box_cx = box[0] + box_w / 2
-        box_cy = box[1] + box_h / 2
-
-        if box_w < 100 and box_h < 100:
-            chip_size = max(box_w, box_h)+100
-        elif box_w < 150 and box_h < 150:
-            chip_size = max(box_w, box_h)+50
-        elif box_w < 200 and box_h < 200:
-            chip_size = max(box_w, box_h)+100
-        elif box_w < 300 and box_h < 300:
-            chip_size = max(box_w, box_h)+50
-        else:
-            chip_size = max(box_w, box_h)
-
-        chip = [box_cx - chip_size / 2, box_cy - chip_size / 2,
-                box_cx + chip_size / 2, box_cy + chip_size / 2]
-
-        shift_x = max(0, 0 - chip[0]) + min(0, width-1 - chip[2])
-        shift_y = max(0, 0 - chip[1]) + min(0, height-1 - chip[3])
-
-        chip = list(map(add, chip, [shift_x, shift_y]*2))
-        chip_list.append([int(x) for x in chip])
-    return chip_list
-
 def main():
     with open(test_ids, 'r') as f:
         test_list = [x.strip() for x in f.readlines()]
@@ -89,12 +48,7 @@ def main():
         # mask_img = cv2.resize(mask_img, (2048, 2048), cv2.INTER_MAX)
         height, width = mask_img.shape[:2]
         # pdb.set_trace()
-        mask_box = utils.generate_box_from_mask(mask_img)
-        mask_box = list(map(utils.resize_box, mask_box,
-                        [width]*len(mask_box), [2048]*len(mask_box)))
-        # mask_box = utils.enlarge_box(mask_box, (2048, 2048), ratio=1)
-
-        chip_list = mask_chip(mask_box, (2048, 2048))
+        chip_list = utils.region_box_generation(mask_img, (2048, 2048))
         # utils._boxvis(cv2.resize(mask_img, (2048, 2048)), chip_list, origin_img)
         # cv2.waitKey(0)
 
